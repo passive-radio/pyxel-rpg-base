@@ -19,6 +19,7 @@ class SysChoosePlayer(System):
         
         for i, (ent, (playable)) in enumerate(self.world.get_component(Playable)):
             if i == self.id_selected:
+                # print("selected", ent)
                 playable.selected = True
             else:
                 playable.selected = False

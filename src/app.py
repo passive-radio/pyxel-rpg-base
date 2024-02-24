@@ -67,7 +67,7 @@ if __name__ == "__main__":
     app.add_screen_to_scenes(ScPlayerStatus, "play", priority = 0)
     
     # イベント処理を追加した
-    app.add_event_to_scene(EvPlayerChoosed, "choose-player", triger_return, priority = 0)
+    app.add_event_to_scene(EvPlayerChoosed, "choose-player", triger_return_p, priority = 0)
     app.add_event_to_scene(EvPlayBGM, "name-player", triger_return_or_tap_p, priority = 0)
     
     # シーン遷移処理を追加した
