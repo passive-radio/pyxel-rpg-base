@@ -22,5 +22,6 @@ def create_playable(app: World, job: str, x: int, y: int, speed: int, hp: int,
     app.add_component_to_entity(ent, Playable)
     app.add_component_to_entity(ent, CharacterStatus, job = job, hp = hp, mp = mp, 
                                 melee = melee, magic = magic, ranged = ranged, agility = agility)
+    app.add_component_to_entity(ent, PlayerConfig)
     
     return ent

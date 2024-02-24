@@ -21,6 +21,7 @@ class App(World):
         self.SCREEN_SIZE = (960, 680)
         
         pyxel.init(self.SCREEN_SIZE[0], self.SCREEN_SIZE[1], title = self.TITLE, fps = self.FPS, )
+        pyxel.load("assets/resource.pyxres")
         self.font_s = BDFRenderer("assets/b14.bdf")
         self.font_m = BDFRenderer("assets/b16.bdf")
         self.font_l = BDFRenderer("assets/b24.bdf")
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     app = App()
     
     # シーンを追加した
-    app.add_scenes(["start", "menu", "player-config", "play", "result", ])
+    app.add_scenes(["start", "menu", "choose-player", "name-player", "play", "result", ])
     
     # エンティティーを追加した
     # プレイアブルキャラクター を追加する (プレイするキャラクター選択シーンで選べるキャラクター)
@@ -56,17 +57,23 @@ if __name__ == "__main__":
     
     
     # システム処理を追加した
-    app.add_system_to_scenes(SysChoosePlayer, "player-config", priority = 0)
+    app.add_system_to_scenes(SysChoosePlayer, "choose-player", priority = 0)
+    app.add_system_to_scenes(SysInputText, "name-player", priority = 0)
     
     # スクリーン処理を追加した
     app.add_screen_to_scenes(ScLaunch, "start", priority = 0)
-    app.add_screen_to_scenes(ScPlayerConfig, "player-config", priority = 0)
+    app.add_screen_to_scenes(ScChoosePlayer, "choose-player", priority = 0)
+    app.add_screen_to_scenes(ScNamePlayer, "name-player", priority = 0)
+    app.add_screen_to_scenes(ScPlayerStatus, "play", priority = 0)
     
     # イベント処理を追加した
-    app.add_event_to_scene(EvPlayerChoosed, "player-config", triger_return, priority = 0)
+    app.add_event_to_scene(EvPlayerChoosed, "choose-player", triger_return, priority = 0)
+    app.add_event_to_scene(EvPlayBGM, "name-player", triger_return_or_tap_p, priority = 0)
     
     # シーン遷移処理を追加した
-    app.add_scene_transition("start", "player-config", triger_return_or_tap)
+    app.add_scene_transition("start", "choose-player", triger_return_or_tap_p)
+    app.add_scene_transition("choose-player", "name-player", triger_return_or_tap_p)
+    app.add_scene_transition("name-player", "play", triger_return_or_tap_p)
     
     app.current_scene = "start"
     app.run()

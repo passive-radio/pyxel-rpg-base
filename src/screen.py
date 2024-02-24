@@ -22,7 +22,7 @@ class ScLaunch(Screen):
         font_m.draw_text(screen_size[0]//2 - len(text1)*16//4, screen_size[1]//2 + 30, text1, 
                         int(pyxel.frame_count / fps * 5) % 15)
 
-class ScPlayerConfig(Screen):
+class ScChoosePlayer(Screen):
     def __init__(self, world, priority: int = 0, **kwargs) -> None:
         super().__init__(world, priority, **kwargs)
     
@@ -79,3 +79,34 @@ class ScPlayerConfig(Screen):
         
         text2 = "Press Enter(Return) to start"
         font_l.draw_text(screen_size[0]//2 - len(text2)*24//4, screen_size[1] - 70, text2, 0)
+        
+class ScNamePlayer(Screen):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+        
+    def draw(self):
+        for ent, (player, config) in self.world.get_components(Player, PlayerConfig):
+            input_x = self.world.SCREEN_SIZE[0]//2 - len(config.name)*24//2
+            input_y = self.world.SCREEN_SIZE[1]//2 - 12
+            
+            text1 = "Enter your name"
+            self.world.font_l.draw_text(self.world.SCREEN_SIZE[0]//2 - len(text1)*24//4, input_y - 40, text1, 0)
+            
+            input_width = min(max(len(config.name) * 24 + 20, 200), 600)
+            pyxel.rect(self.world.SCREEN_SIZE[0]//2 - input_width//2, input_y - 10, input_width, 40, 7)
+            
+            width = len(config.name) * 24
+            text_render_x = self.world.SCREEN_SIZE[0]//2 - width//2
+            self.world.font_l.draw_text(text_render_x, input_y, config.name, 0)
+            
+            text_bar_colors = [0, 7]
+            pyxel.rect(text_render_x + width + 4, input_y, 2, 24, text_bar_colors[(pyxel.frame_count // (self.world.FPS//2)) % 2])
+            
+class ScPlayerStatus(Screen):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+    
+    def draw(self):
+        for ent, (player, status) in self.world.get_components(Player, CharacterStatus):
+            text = f"{player.name} {status.job} {status.hp} {status.mp} {status.melee} {status.magic} {status.ranged} {status.agility}"
+            self.world.font_l.draw_text(10, 10, text, 0)

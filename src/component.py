@@ -22,6 +22,11 @@ class Character(Component):
     id: str
     
 @dataclass
+class PlayerConfig(Component):
+    name_alphabet: str = ""
+    name: str = ""
+    
+@dataclass
 class CharacterStatus(Component):
     job: str
     hp: int
