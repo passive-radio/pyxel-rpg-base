@@ -7,6 +7,7 @@ from system import *
 from screen import *
 from event import *
 from triger import *
+from actions import *
 
 from font import BDFRenderer
 
@@ -45,6 +46,9 @@ if __name__ == "__main__":
     # App クラスのインスタンスを作成した
     app = App()
     
+    # ユーザーアクションの定義を追加した
+    app.set_user_actions_map(Actions())
+    
     # シーンを追加した
     app.add_scenes(["start", "menu", "choose-player", "name-player", "play", "result", ])
     
@@ -67,13 +71,13 @@ if __name__ == "__main__":
     app.add_screen_to_scenes(ScPlayerStatus, "play", priority = 0)
     
     # イベント処理を追加した
-    app.add_event_to_scene(EvPlayerChoosed, "choose-player", triger_return_p, priority = 0)
-    app.add_event_to_scene(EvPlayBGM, "name-player", triger_return_or_tap_p, priority = 0)
+    app.add_event_to_scene(EvPlayerChoosed, "choose-player", lambda: app.actions.enter, priority = 0)
+    app.add_event_to_scene(EvPlayBGM, "name-player", lambda: app.actions.enter_p, priority = 0)
     
     # シーン遷移処理を追加した
-    app.add_scene_transition("start", "choose-player", triger_return_or_tap_p)
-    app.add_scene_transition("choose-player", "name-player", triger_return_or_tap_p)
-    app.add_scene_transition("name-player", "play", triger_return_or_tap_p)
+    app.add_scene_transition("start", "choose-player", lambda: app.actions.enter_p)
+    app.add_scene_transition("choose-player", "name-player", lambda: app.actions.enter_p)
+    app.add_scene_transition("name-player", "play", lambda: app.actions.enter_p)
     
     app.current_scene = "start"
     app.run()

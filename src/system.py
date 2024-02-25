@@ -1,4 +1,3 @@
-import pyxel
 from pigframe import *
 from jaconv import alphabet2kana, kana2alphabet
 
@@ -10,16 +9,18 @@ class SysChoosePlayer(System):
         self.id_selected = 0
         
     def process(self):
+        actions = self.world.actions
         
-        if pyxel.btnp(pyxel.KEY_DOWN) or pyxel.btnp(pyxel.KEY_S):
+        if actions.down_p:
             self.id_selected += 1
-        elif pyxel.btnp(pyxel.KEY_UP) or pyxel.btnp(pyxel.KEY_W):
+        elif actions.up_p:
             self.id_selected -= 1
         self.id_selected = max(0, min(self.id_selected, len(self.world.get_component(Playable)) - 1))
         
+        print(self.id_selected)
         for i, (ent, (playable)) in enumerate(self.world.get_component(Playable)):
             if i == self.id_selected:
-                # print("selected", ent)
+                print("selected", ent)
                 playable.selected = True
             else:
                 playable.selected = False
@@ -28,8 +29,10 @@ class SysChoosePlayer(System):
 class SysInputText(System):
     def process(self):
         for ent, (player, config) in self.world.get_components(Player, PlayerConfig):
+            actions = self.world.actions
             text: str = config.name_alphabet
-            if pyxel.btnp(pyxel.KEY_BACKSPACE) or pyxel.btnp(pyxel.KEY_KP_BACKSPACE):
+
+            if actions.backspace_p:
                 print("backspace")
                 if 0 < len(config.name):
                     print("erase")
@@ -38,58 +41,60 @@ class SysInputText(System):
                     print(text, "->", config.name_alphabet)
                     return
                     
-            if pyxel.btnp(pyxel.KEY_A):
+            if actions.a_p:
                 text += "a"
-            if pyxel.btnp(pyxel.KEY_B):
+            if actions.b_p:
                 text += "b"
-            if pyxel.btnp(pyxel.KEY_C):
+            if actions.c_p:
                 text += "c"
-            if pyxel.btnp(pyxel.KEY_D):
+            if actions.d_p:
                 text += "d"
-            if pyxel.btnp(pyxel.KEY_E):
+            if actions.e_p:
                 text += "e"
-            if pyxel.btnp(pyxel.KEY_F):
+            if actions.f_p:
                 text += "f"
-            if pyxel.btnp(pyxel.KEY_G):
+            if actions.g_p:
                 text += "g"
-            if pyxel.btnp(pyxel.KEY_H):
+            if actions.h_p:
                 text += "h"
-            if pyxel.btnp(pyxel.KEY_I):
+            if actions.i_p:
                 text += "i"
-            if pyxel.btnp(pyxel.KEY_J):
+            if actions.j_p:
                 text += "j"
-            if pyxel.btnp(pyxel.KEY_K):
+            if actions.k_p:
                 text += "k"
-            if pyxel.btnp(pyxel.KEY_L):
+            if actions.l_p:
                 text += "l"
-            if pyxel.btnp(pyxel.KEY_M):
+            if actions.m_p:
                 text += "m"
-            if pyxel.btnp(pyxel.KEY_N):
+            if actions.n_p:
                 text += "n"
-            if pyxel.btnp(pyxel.KEY_O):
+            if actions.o_p:
                 text += "o"
-            if pyxel.btnp(pyxel.KEY_P):
+            if actions.p_p:
                 text += "p"
-            if pyxel.btnp(pyxel.KEY_Q):
+            if actions.q_p:
                 text += "q"
-            if pyxel.btnp(pyxel.KEY_R):
+            if actions.r_p:
                 text += "r"
-            if pyxel.btnp(pyxel.KEY_S):
+            if actions.s_p:
                 text += "s"
-            if pyxel.btnp(pyxel.KEY_T):
+            if actions.t_p:
                 text += "t"
-            if pyxel.btnp(pyxel.KEY_U):
+            if actions.u_p:
                 text += "u"
-            if pyxel.btnp(pyxel.KEY_V):
+            if actions.v_p:
                 text += "v"
-            if pyxel.btnp(pyxel.KEY_W):
+            if actions.w_p:
                 text += "w"
-            if pyxel.btnp(pyxel.KEY_X):
+            if actions.x_p:
                 text += "x"
-            if pyxel.btnp(pyxel.KEY_Y):
+            if actions.y_p:
                 text += "y"
-            if pyxel.btnp(pyxel.KEY_Z):
+            if actions.z_p:
                 text += "z"
+            if actions.space_p:
+                text += " "
             
             if text[-2:] == "si":
                 text = text[:-2] + "shi"
