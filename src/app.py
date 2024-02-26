@@ -6,10 +6,11 @@ from component import *
 from system import *
 from screen import *
 from event import *
-from triger import *
+
 from actions import *
 
 from font import BDFRenderer
+from characters import NPCS
 
 class App(World):
     def __init__(self):
@@ -37,7 +38,13 @@ class App(World):
         self.process_screens()
 
     def update(self):
-        self.process()
+        self.process_user_actions()
+        self.scene_manager._SceneManager__process_events()
+        self.process_events()
+        self.process_systems()
+        self.scene_manager._SceneManager__process_transitions()
+        self.scene_manager.update_scene()
+        print(self.current_scene)
         
     def run(self):
         pyxel.run(self.update, self.draw)
@@ -50,34 +57,52 @@ if __name__ == "__main__":
     app.set_user_actions_map(Actions())
     
     # シーンを追加した
-    app.add_scenes(["start", "menu", "choose-player", "name-player", "play", "result", ])
+    app.add_scenes(["start", "menu", "choose-player", "name-player", "play", "fight", "result", ])
     
     # エンティティーを追加した
     # プレイアブルキャラクター を追加する (プレイするキャラクター選択シーンで選べるキャラクター)
-    create_playable(app, "剣士", 10, 10, 1, 100, 0, 10, 0, 0, 2)
-    create_playable(app, "魔法使い", 10, 10, 1, 70, 30, 2, 10, 0, 1)
-    create_playable(app, "狩人", 10, 10, 1, 80, 0, 5, 0, 10, 3)
-    create_playable(app, "僧侶", 10, 10, 1, 80, 20, 5, 5, 0, 2)
+    create_playable(app, "剣士", 40, 40, 1, 100, 0, 10, 0, 0, 2, 5)
+    create_playable(app, "魔法使い", 40, 40, 1, 70, 30, 2, 10, 0, 1, 5)
+    create_playable(app, "狩人", 40, 40, 1, 80, 0, 5, 0, 10, 3, 5)
+    create_playable(app, "僧侶", 40, 40, 1, 80, 20, 5, 5, 0, 2, 5)
     
+    for npc in NPCS:
+        create_npc(app, npc["name"], npc["job"], npc["x"], npc["y"], npc["speed"], npc["hp"], npc["mp"], 
+                    npc["melee"], npc["magic"], npc["ranged"], npc["agility"], npc["toughness"])
     
     # システム処理を追加した
     app.add_system_to_scenes(SysChoosePlayer, "choose-player", priority = 0)
     app.add_system_to_scenes(SysInputText, "name-player", priority = 0)
+    app.add_system_to_scenes(SysControlPlayer, "play", priority = 0)
+    app.add_system_to_scenes(SysMoveByVelocity, "play", priority = 10)
+    app.add_system_to_scenes(SysCollision, "play", priority = 20)
+    app.add_system_to_scenes(SysUpdatePosition, "play", priority = 30)
+    app.add_system_to_scenes(SysInteract, "play", priority = 40)
     
     # スクリーン処理を追加した
     app.add_screen_to_scenes(ScLaunch, "start", priority = 0)
     app.add_screen_to_scenes(ScChoosePlayer, "choose-player", priority = 0)
     app.add_screen_to_scenes(ScNamePlayer, "name-player", priority = 0)
-    app.add_screen_to_scenes(ScPlayerStatus, "play", priority = 0)
+    app.add_screen_to_scenes(ScPlayerStatus, ["play", "fight"], priority = 0)
+    app.add_screen_to_scenes(ScPlayerPawn, "play", priority = 10)
+    app.add_screen_to_scenes(ScNPCPawn, "play", priority = 20)
+    app.add_screen_to_scenes(ScInteraction, "play", priority = 30)
+    app.add_screen_to_scenes(ScOpponentStatus, "fight", priority = 40)
+    app.add_screen_to_scenes(ScPlayerFullImage, "fight", priority = 50)
+    app.add_screen_to_scenes(ScOpponentFullImage, "fight", priority = 60)
     
     # イベント処理を追加した
-    app.add_event_to_scene(EvPlayerChoosed, "choose-player", lambda: app.actions.enter, priority = 0)
+    app.add_event_to_scene(EvPlayerChoosed, "choose-player", lambda: app.actions.enter_p, priority = 0)
     app.add_event_to_scene(EvPlayBGM, "name-player", lambda: app.actions.enter_p, priority = 0)
+    app.add_event_to_scene(EvStartInteraction, "play", lambda: app.actions.enter_p, priority = 30)
+    app.add_event_to_scene(EvStartFight, "play", lambda: app.actions.f_p, priority = 20)
+    app.add_event_to_scene(EvStartTalk, "play", lambda: app.actions.t_p, priority = 10)
     
     # シーン遷移処理を追加した
     app.add_scene_transition("start", "choose-player", lambda: app.actions.enter_p)
     app.add_scene_transition("choose-player", "name-player", lambda: app.actions.enter_p)
     app.add_scene_transition("name-player", "play", lambda: app.actions.enter_p)
+    app.add_scene_transition("play", "fight", lambda: app.actions.f_p)
     
     app.current_scene = "start"
     app.run()

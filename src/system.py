@@ -17,10 +17,8 @@ class SysChoosePlayer(System):
             self.id_selected -= 1
         self.id_selected = max(0, min(self.id_selected, len(self.world.get_component(Playable)) - 1))
         
-        print(self.id_selected)
         for i, (ent, (playable)) in enumerate(self.world.get_component(Playable)):
             if i == self.id_selected:
-                print("selected", ent)
                 playable.selected = True
             else:
                 playable.selected = False
@@ -33,12 +31,9 @@ class SysInputText(System):
             text: str = config.name_alphabet
 
             if actions.backspace_p:
-                print("backspace")
                 if 0 < len(config.name):
-                    print("erase")
                     config.name = config.name[:-1]
                     config.name_alphabet = kana2alphabet(config.name)
-                    print(text, "->", config.name_alphabet)
                     return
                     
             if actions.a_p:
@@ -108,3 +103,80 @@ class SysInputText(System):
                 config.name_alphabet = text
                 player.name = text_jp
                 
+class SysControlPlayer(System):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+        
+    def process(self):
+        for ent, (player, vel) in self.world.get_components(Player, Velocity):
+            actions = self.world.actions
+            vel.x = 0
+            vel.y = 0
+            if actions.up:
+                vel.y = -1
+            if actions.down:
+                vel.y = 1
+            if actions.left:
+                vel.x = -1
+            if actions.right:
+                vel.x = 1
+                
+class SysMoveByVelocity(System):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+    
+    def process(self):
+        for ent, (pos, vel) in self.world.get_components(Position, Velocity):
+            pos.x += vel.x * vel.speed
+            pos.y += vel.y * vel.speed
+            pos.x = int(pos.x)
+            pos.y = int(pos.y)
+            
+class SysCollision(System):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+    
+    def process(self):
+        margin = 2
+        for ent1, (_, pos1, vel1, _) in self.world.get_components(Player, Position, Velocity, Collidable):
+            for ent2, (pos2, vel2, _) in self.world.get_components(Position, Velocity, Collidable):
+                if ent1 != ent2:
+                    if (pos2.x - margin <= pos1.x + pos1.w <= pos2.x + pos2.w + margin and pos2.y - margin <= pos1.y + pos1.h <= pos2.y + pos2.h + margin) \
+                        or (pos2.x - margin <= pos1.x <= pos2.x + pos2.w + margin and pos2.y - margin <= pos1.y + pos1.h <= pos2.y + pos2.h + margin) \
+                        or (pos2.x - margin <= pos1.x <= pos2.x + pos2.w + margin and pos2.y - margin <= pos1.y <= pos2.y + pos2.h + margin) \
+                        or (pos2.x - margin <= pos1.x + pos1.w <= pos2.x + pos2.w + margin and pos2.y - margin <= pos1.y <= pos2.y + pos2.h + margin):
+                        pos1.x = pos1.x_prev
+                        pos1.y = pos1.y_prev
+
+class SysUpdatePosition(System):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+    
+    def process(self):
+        for ent, (pos) in self.world.get_component(Position):
+            pos.x_prev = pos.x
+            pos.y_prev = pos.y
+
+class SysInteract(System):
+    def process(self):
+        margin = 4
+        for ent, (pos, player, status) in self.world.get_components(Position, Player, CharacterStatus):
+            for ent2, (pos2, npc, status2) in self.world.get_components(Position, NPC, CharacterStatus):
+                if (pos2.x - margin <= pos.x + pos.w <= pos2.x + pos2.w + margin and pos2.y - margin <= pos.y + pos.h <= pos2.y + pos2.h + margin) \
+                    or (pos2.x - margin <= pos.x <= pos2.x + pos2.w + margin and pos2.y - margin <= pos.y + pos.h <= pos2.y + pos2.h + margin) \
+                    or (pos2.x - margin <= pos.x <= pos2.x + pos2.w + margin and pos2.y - margin <= pos.y <= pos2.y + pos2.h + margin) \
+                    or (pos2.x - margin <= pos.x + pos.w <= pos2.x + pos2.w + margin and pos2.y - margin <= pos.y <= pos2.y + pos2.h + margin):
+                    # print("interacted:", ent, ent2)
+                    interactable = self.world.get_entity_object(ent)[Interactable]
+                    interactable.opponent = ent2
+                    # print("player:", player.name, status.hp, status.mp, status.melee, status.magic, status.ranged, status.agility, status.toughness)
+                    # print("npc:", npc.name, status2.hp, status2.mp, status2.melee, status2.magic, status2.ranged, status2.agility, status2.toughness)
+                    return
+                else:
+                    opponent_interactable = self.world.get_entity_object(ent2)[Interactable]
+                    opponent_interactable.opponent = None
+                    opponent_interactable.status = 0
+                    
+            interactable = self.world.get_entity_object(ent)[Interactable]
+            interactable.opponent = None
+            interactable.status = 0

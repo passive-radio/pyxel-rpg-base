@@ -108,5 +108,188 @@ class ScPlayerStatus(Screen):
     
     def draw(self):
         for ent, (player, status) in self.world.get_components(Player, CharacterStatus):
-            text = f"{player.name} {status.job} {status.hp} {status.mp} {status.melee} {status.magic} {status.ranged} {status.agility}"
-            self.world.font_l.draw_text(10, 10, text, 0)
+            screen_size = self.world.SCREEN_SIZE
+            x = 40
+            y = screen_size[1] - 100
+            hp_bar_y = y - 40
+            pyxel.rect(x - 4, y - 4, 360, 84, 7)
+            pyxel.rectb(x - 4, y - 4, 360, 84, 0)
+            
+            hp_max_x = 140
+            hp_x = status.hp / status.hp_max * hp_max_x
+            
+            bar_height = 8
+            
+            self.world.font_s.draw_text(x, hp_bar_y - 2, "HP", 0)
+            
+            pyxel.rect(x + 20, hp_bar_y, hp_max_x, bar_height, 13)
+            pyxel.rect(x + 20, hp_bar_y, hp_x, bar_height, 8)
+            pyxel.rectb(x - 2 + 20, hp_bar_y - 2, hp_max_x + 4, bar_height + 4, 0)
+            
+            mp_bar_y = hp_bar_y + 16
+            
+            mp_max_x = 140
+            if status.mp_max == 0:
+                mp_x = 0
+            else:
+                mp_x = status.mp / status.mp_max * mp_max_x
+                
+            self.world.font_s.draw_text(x, mp_bar_y - 2, "MP", 0)
+            pyxel.rect(x + 20, mp_bar_y, mp_max_x, bar_height, 13)
+            pyxel.rect(x + 20, mp_bar_y, mp_x, bar_height, 5)
+            pyxel.rectb(x - 2 + 20, mp_bar_y - 2, mp_max_x + 4, bar_height + 4, 0)
+            
+            text = f"{player.name}"
+            self.world.font_l.draw_text(x, y, text, 0)
+            hp = f"HP: {status.hp}"
+            self.world.font_m.draw_text(x, y + 40, hp, 0)
+            mp = f"MP: {status.mp}"
+            self.world.font_m.draw_text(x, y + 60, mp, 0)
+            melee = f"Melee: {status.melee}"
+            self.world.font_m.draw_text(x + 70, y + 40, melee, 0)
+            ranged = f"Ranged: {status.ranged}"
+            self.world.font_m.draw_text(x + 70, y + 60, ranged, 0)
+            magic = f"Magic: {status.magic}"
+            self.world.font_m.draw_text(x + 150, y + 40, magic, 0)
+            agility = f"Agility: {status.agility}"
+            self.world.font_m.draw_text(x + 150, y + 60, agility, 0)
+            toughness = f"Toughness: {status.toughness}"
+            self.world.font_m.draw_text(x + 230, y + 40, toughness, 0)
+            
+class ScPlayerPawn(Screen):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+    
+    def draw(self):
+        for ent, (player, position) in self.world.get_components(Player, Position):
+            # pyxel.rect(position.x, position.y, 16, 16, 5)
+            # pyxel.rectb(position.x, position.y, 16, 16, 0)
+            pyxel.blt(position.x, position.y, 0, 0, 0, 23, 31, 7)
+            # self.world.font_s.draw_text(position.x, position.y, player.name, 0)
+
+class ScNPCPawn(Screen):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+    
+    def draw(self):
+        for ent, (npc, position) in self.world.get_components(NPC, Position):
+            # pyxel.rect(position.x, position.y, 16, 16, 3)
+            # pyxel.rectb(position.x, position.y, 16, 16, 0)
+            pyxel.blt(position.x, position.y, 0, 24, 0, 32, 31, 7)
+            self.world.font_s.draw_text(position.x, position.y, npc.name, 0)
+            
+class ScInteraction(Screen):
+    def draw(self):
+        for ent, (player, interactable) in self.world.get_components(Player, Interactable):
+            if interactable.opponent is None:
+                continue
+            opponent = self.world.get_entity_object(interactable.opponent)
+            opponent_character = opponent[NPC]
+            opponent_status = opponent[CharacterStatus]
+            
+            text = f"{opponent_character.name}"
+            self.world.font_m.draw_text(10, 10, text, 0)
+            
+            if interactable.status == 0:
+                message = f"Press Enter to interact."
+                self.world.font_m.draw_text(10, 30, message, 0)
+            
+            if interactable.status == 1:
+                message = f"Press Enter to end conversation."
+                self.world.font_m.draw_text(10, 30, message, 0)
+                text_fight = "Fight [F]"
+                text_talk = "Talk [T]"
+                self.world.font_m.draw_text(10, 50, text_fight, 0)
+                self.world.font_m.draw_text(10, 70, text_talk, 0)
+            
+            if interactable.status == 2:
+                message = f"Fighting {opponent_character.name}..."
+                self.world.font_m.draw_text(10, 30, message, 0)
+                
+            if interactable.status == 3:
+                message = f"Talking to {opponent_character.name}..."
+                self.world.font_m.draw_text(10, 30, message, 0)
+                
+class ScOpponentStatus(Screen):
+    def draw(self):
+        for ent, (player, interactable) in self.world.get_components(Player, Interactable):
+            if interactable.opponent is None or interactable.status != 2:
+                print("no opponent or not fighting:", interactable.opponent, interactable.status)
+                continue
+            opponent = self.world.get_entity_object(interactable.opponent)
+            character = opponent[NPC]
+            status = opponent[CharacterStatus]
+            
+            text = f"{character.name}"
+            self.world.font_m.draw_text(10, 10, text, 0)
+            
+            if interactable.status == 2:
+                message = f"Fighting {character.name}..."
+                self.world.font_m.draw_text(10, 30, message, 0)
+                
+            screen_size = self.world.SCREEN_SIZE
+            x = screen_size[0] - 400
+            y = 100
+            
+            hp_bar_y = y - 40
+            pyxel.rect(x - 4, y - 4, 360, 84, 7)
+            pyxel.rectb(x - 4, y - 4, 360, 84, 0)
+            
+            hp_max_x = 140
+            hp_x = status.hp / status.hp_max * hp_max_x
+            
+            bar_height = 8
+            
+            self.world.font_s.draw_text(x, hp_bar_y - 2, "HP", 0)
+            
+            pyxel.rect(x + 20, hp_bar_y, hp_max_x, bar_height, 13)
+            pyxel.rect(x + 20, hp_bar_y, hp_x, bar_height, 8)
+            pyxel.rectb(x - 2 + 20, hp_bar_y - 2, hp_max_x + 4, bar_height + 4, 0)
+            
+            mp_bar_y = hp_bar_y + 16
+            
+            mp_max_x = 140
+            if status.mp_max == 0:
+                mp_x = 0
+            else:
+                mp_x = status.mp / status.mp_max * mp_max_x
+                
+            self.world.font_s.draw_text(x, mp_bar_y - 2, "MP", 0)
+            pyxel.rect(x + 20, mp_bar_y, mp_max_x, bar_height, 13)
+            pyxel.rect(x + 20, mp_bar_y, mp_x, bar_height, 5)
+            pyxel.rectb(x - 2 + 20, mp_bar_y - 2, mp_max_x + 4, bar_height + 4, 0)
+            pyxel.rect(x - 4, y - 4, 360, 84, 7)
+            pyxel.rectb(x - 4, y - 4, 360, 84, 0)
+            text = f"{character.name}"
+            self.world.font_l.draw_text(x, y, text, 0)
+            hp = f"HP: {status.hp}"
+            self.world.font_m.draw_text(x, y + 40, hp, 0)
+            mp = f"MP: {status.mp}"
+            self.world.font_m.draw_text(x, y + 60, mp, 0)
+            melee = f"Melee: {status.melee}"
+            self.world.font_m.draw_text(x + 70, y + 40, melee, 0)
+            ranged = f"Ranged: {status.ranged}"
+            self.world.font_m.draw_text(x + 70, y + 60, ranged, 0)
+            magic = f"Magic: {status.magic}"
+            self.world.font_m.draw_text(x + 150, y + 40, magic, 0)
+            agility = f"Agility: {status.agility}"
+            self.world.font_m.draw_text(x + 150, y + 60, agility, 0)
+            toughness = f"Toughness: {status.toughness}"
+            self.world.font_m.draw_text(x + 230, y + 40, toughness, 0)
+            
+class ScPlayerFullImage(Screen):
+    def draw(self):
+        x = 300
+        y = 300
+        for ent, (player) in self.world.get_component(Player):
+            pyxel.blt(x, y, 0, 0, 0, 23, 31, 7)
+            
+class ScOpponentFullImage(Screen):
+    def draw(self):
+        x = 600
+        y = 300
+        for ent, (player, interactable) in self.world.get_components(Player, Interactable):
+            if interactable.opponent is None or interactable.status != 2:
+                continue
+            opponent = self.world.get_entity_object(interactable.opponent)
+            pyxel.blt(x, y, 0, 24, 0, 32, 31, 7)

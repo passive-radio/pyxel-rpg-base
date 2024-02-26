@@ -5,6 +5,10 @@ from pigframe import Component
 class Position(Component):
     x: int
     y: int
+    x_prev: int = None
+    y_prev: int = None
+    w: int = 16
+    h: int = 16
     
 @dataclass
 class Velocity(Component):
@@ -35,11 +39,27 @@ class CharacterStatus(Component):
     magic: int
     ranged: int
     agility: int
+    toughness: int
+    hp_max: int
+    mp_max: int
     
 @dataclass
 class Playable(Component):
     selected: bool = False
 
 @dataclass
+class Collidable(Component):
+    pass
+
+@dataclass
 class Player(Character):
     pass
+
+@dataclass
+class NPC(Character):
+    pass
+
+@dataclass
+class Interactable(Component):
+    opponent: int | None = None # entity id, if None, not interacting
+    status: int = 0 # 0: not interacted, 1: interacting, 2: fight, 3: talk
