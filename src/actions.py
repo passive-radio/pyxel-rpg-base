@@ -49,6 +49,7 @@ class Actions(ActionMap):
     x_p: tuple = pyxel.btnp, pyxel.KEY_X
     y_p: tuple = pyxel.btnp, pyxel.KEY_Y
     z_p: tuple = pyxel.btnp, pyxel.KEY_Z
+    bar_p: tuple = pyxel.btnp, pyxel.KEY_MINUS
     a: tuple = pyxel.btn, pyxel.KEY_A
     b: tuple = pyxel.btn, pyxel.KEY_B
     c: tuple = pyxel.btn, pyxel.KEY_C
@@ -75,3 +76,6 @@ class Actions(ActionMap):
     x: tuple = pyxel.btn, pyxel.KEY_X
     y: tuple = pyxel.btn, pyxel.KEY_Y
     z: tuple = pyxel.btn, pyxel.KEY_Z
+    bar: tuple = pyxel.btn, pyxel.KEY_MINUS
+    mouse_left_p: tuple = pyxel.btnp, pyxel.MOUSE_BUTTON_LEFT
+    mouse_left: tuple = pyxel.btn, pyxel.MOUSE_BUTTON_LEFT

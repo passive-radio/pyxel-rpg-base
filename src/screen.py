@@ -16,11 +16,11 @@ class ScLaunch(Screen):
         font_m: BDFRenderer = self.world.font_m
         font_s: BDFRenderer = self.world.font_s
         
-        font_l.draw_text(screen_size[0]//2 - len(title)*24//2, screen_size[1]//2 - 12, title, 0)
+        font_l.draw_text(screen_size[0]//2 - len(title)*24//2, screen_size[1]//2 - 24, title, 0)
         
-        text1 = "Press Enter to start"
-        font_m.draw_text(screen_size[0]//2 - len(text1)*16//4, screen_size[1]//2 + 30, text1, 
-                        int(pyxel.frame_count / fps * 5) % 15)
+        # text1 = "Press Enter to start"
+        # font_m.draw_text(screen_size[0]//2 - len(text1)*16//4, screen_size[1]//2 + 30, text1, 
+        #                 int(pyxel.frame_count / fps * 5) % 15)
 
 class ScChoosePlayer(Screen):
     def __init__(self, world, priority: int = 0, **kwargs) -> None:
@@ -35,9 +35,9 @@ class ScChoosePlayer(Screen):
         font_s: BDFRenderer = self.world.font_s
         
         pyxel.rect(100, 80, screen_size[0] - 200, 40, 1)
-        pyxel.rectb(100, 80, screen_size[0] - 200, screen_size[1] - 160, 15)
+        pyxel.rectb(100, 80, screen_size[0] - 200, screen_size[1] - 160, 7)
         text = "Choose your character"
-        font_l.draw_text(110, 90, text, 0)
+        font_l.draw_text(110, 90, text, 7)
         
         job_x = 110
         hp_x = 250
@@ -139,7 +139,7 @@ class ScPlayerStatus(Screen):
             pyxel.rect(x + 20, mp_bar_y, mp_x, bar_height, 5)
             pyxel.rectb(x - 2 + 20, mp_bar_y - 2, mp_max_x + 4, bar_height + 4, 0)
             
-            text = f"{player.name}"
+            text = f"{player.name} ({status.job})"
             self.world.font_l.draw_text(x, y, text, 0)
             hp = f"HP: {status.hp}"
             self.world.font_m.draw_text(x, y + 40, hp, 0)
@@ -220,7 +220,7 @@ class ScOpponentStatus(Screen):
             character = opponent[NPC]
             status = opponent[CharacterStatus]
             
-            text = f"{character.name}"
+            text = f"{character.name} ({status.job})"
             self.world.font_m.draw_text(10, 10, text, 0)
             
             if interactable.status == 2:
@@ -260,7 +260,7 @@ class ScOpponentStatus(Screen):
             pyxel.rectb(x - 2 + 20, mp_bar_y - 2, mp_max_x + 4, bar_height + 4, 0)
             pyxel.rect(x - 4, y - 4, 360, 84, 7)
             pyxel.rectb(x - 4, y - 4, 360, 84, 0)
-            text = f"{character.name}"
+            text = f"{character.name} ({status.job})"
             self.world.font_l.draw_text(x, y, text, 0)
             hp = f"HP: {status.hp}"
             self.world.font_m.draw_text(x, y + 40, hp, 0)
@@ -293,3 +293,15 @@ class ScOpponentFullImage(Screen):
                 continue
             opponent = self.world.get_entity_object(interactable.opponent)
             pyxel.blt(x, y, 0, 24, 0, 32, 31, 7)
+            
+class ScButton(Screen):
+    def draw(self):
+        for ent, (button) in self.world.get_component(Button):
+            print(ent, button)
+            pyxel.rect(button.x, button.y, button.w, button.h, button.bg_color)
+            if button.border_color is not None:
+                pyxel.rectb(button.x, button.y, button.w, button.h, button.border_color)
+            if button.text is not None:
+                text = button.text
+                self.world.font_m.draw_text(button.x + (button.w - len(text)*16)//2, button.y + (button.h - 16)//2, text, button.color)
+            

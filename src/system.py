@@ -1,5 +1,6 @@
 from pigframe import *
 from jaconv import alphabet2kana, kana2alphabet
+import pyxel
 
 from component import *
 
@@ -90,6 +91,8 @@ class SysInputText(System):
                 text += "z"
             if actions.space_p:
                 text += " "
+            if actions.bar_p:
+                text += "-"
             
             if text[-2:] == "si":
                 text = text[:-2] + "shi"
@@ -180,3 +183,38 @@ class SysInteract(System):
             interactable = self.world.get_entity_object(ent)[Interactable]
             interactable.opponent = None
             interactable.status = 0
+            
+class SysButton(System):
+    """System for button component
+    """
+    def process(self):
+        for ent, (button) in self.world.get_component(Button):
+            hover_cond = button.x <= pyxel.mouse_x <= button.x + button.w and \
+                button.y <= pyxel.mouse_y <= button.y + button.h
+            clicked_cond = self.world.actions.mouse_left_p
+            clicking_cond = self.world.actions.mouse_left
+            if hover_cond:
+                button.hover = True
+                if clicked_cond:
+                    button.clicked = True
+                    print(f"Button (ent:{ent}) clicked!")
+                elif clicking_cond:
+                    button.clicking = True
+                else:
+                    button.clicking = False
+                    button.clicked = False
+            else:
+                button.hover = False
+                button.clicked = False
+                button.clicking = False
+                
+class SysButtonEvent(System):
+    """System for button component. If button is clicked, linked event is processed.
+    """
+    def process(self):
+        for ent, (button) in self.world.get_component(Button):
+            if button.clicked:
+                next_scene = button.to
+                # self.world.scene_manager.next_scene = next_scene
+                # button.clicked = False
+                

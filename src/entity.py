@@ -50,3 +50,41 @@ def create_npc(app: World, name: str, job: str, x: int, y: int, speed: int, hp: 
     app.add_component_to_entity(ent, Interactable)
     
     return ent
+
+def create_button(app: World, x: int, y: int, w: int, h: int, to: str, text: str = None,
+                  color: int = None, bg_color: int = None, border_color: int = None) -> int:
+    """Create button entity and add components to it.
+
+    Parameters
+    ----------
+    app : World
+        World object
+    x : int
+        x 
+    y : int
+        y
+    w : int
+        w
+    h : int
+        h
+    text : str, optional
+        text, by default None
+    color : int, optional
+        color id, by default None
+    bg_color : int, optional
+        background color id, by default None
+    border_color : int, optional
+        border color id, by default None
+
+    Returns
+    -------
+    int
+        entity id
+    """
+    
+    ent = app.create_entity()
+    app.add_component_to_entity(ent, Button, x = x, y = y, w = w, h = h,  to = to,
+                                text = text, color = color, bg_color = bg_color, 
+                                border_color = border_color)
+    
+    return ent

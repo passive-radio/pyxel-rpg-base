@@ -1,7 +1,25 @@
+"""Event classes for the game.
+"""
 import pyxel
 from pigframe import *
 
 from component import *
+from entity import *
+
+class EvStarted(Event):
+    def __init__(self, world, priority: int = 0, **kwargs) -> None:
+        super().__init__(world, priority, **kwargs)
+        
+    def _Event__process(self):
+        print("start event")
+        for ent, (button) in self.world.get_component(Button):
+            if button.to == "choose-player":
+                self.world.remove_component_from_entity(ent, Button)
+                self.world.remove_entity(ent)
+
+        btn02 = create_button(self.world, 710, 550, 120, 30, "name-player", "つぎへ", 0, 7, 0)
+        self.world.add_event_to_scene(EvPlayerChoosed, "choose-player", lambda: self.world.get_entity_object(btn02)[Button].clicked, priority = 0)
+        self.world.scene_manager.next_scene = "choose-player"
 
 class EvPlayerChoosed(Event):
     def __init__(self, world, priority: int = 0, **kwargs) -> None:
@@ -20,7 +38,30 @@ class EvPlayerChoosed(Event):
                 print("remove PlayerConfig", "from", ent)
                 self.world.remove_component_from_entity(ent, PlayerConfig)
                 self.world.remove_component_from_entity(ent, Playable)
-                
+
+        btn03 = create_button(self.world, 640, self.world.SCREEN_SIZE[1]//2 - 22, 100, 40, "play", "決定", 0, 7, 0)
+        self.world.add_event_to_scene(EvPlayerNamed, "name-player", lambda: self.world.get_entity_object(btn03)[Button].clicked, priority = 0)
+        self.world.add_event_to_scene(EvPlayBGM, "name-player", lambda: self.world.get_entity_object(btn03)[Button].clicked, priority = 0)
+        self.world.scene_manager.next_scene = "name-player"
+
+        for ent, (button) in self.world.get_component(Button):
+            if button.to == "name-player":
+                self.world.remove_component_from_entity(ent, Button)
+                self.world.remove_entity(ent)
+                print("removed")
+                        
+class EvPlayerNamed(Event):
+    def _Event__process(self):
+        for ent, (player, config) in self.world.get_components(Player, PlayerConfig):
+            player.name = config.name
+            self.world.scene_manager.next_scene = "play"
+        
+        for ent, (button) in self.world.get_component(Button):
+            if button.to == "play":
+                self.world.remove_component_from_entity(ent, Button)
+                self.world.remove_entity(ent)
+                print("removed")
+            
 class EvPlayBGM(Event):
     def __init__(self, world, priority: int = 0, **kwargs) -> None:
         super().__init__(world, priority, **kwargs)
