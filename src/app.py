@@ -66,7 +66,7 @@ if __name__ == "__main__":
     create_playable(app, "僧侶", 40, 40, 1, 80, 20, 5, 5, 0, 2, 5)
     
     # ボタンを追加した
-    btn01 = create_button(app, (app.SCREEN_SIZE[0] - 120)//2, (app.SCREEN_SIZE[1] - 30)//2 + 40, 120, 30, "choose-player", "はじめる", 0, 7, 0)
+    btn01 = create_button(app, (app.SCREEN_SIZE[0] - 120)//2, (app.SCREEN_SIZE[1] - 40)//2 + 50, 120, 40, "choose-player", "はじめる", 0, 7, 0)
 
     for npc in NPCS:
         create_npc(app, npc["name"], npc["job"], npc["x"], npc["y"], npc["speed"], npc["hp"], npc["mp"], 
